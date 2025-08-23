@@ -6,6 +6,7 @@ import com.example.msauthentication.model.AuthResponse;
 import com.example.msauthentication.model.LoginRequest;
 import com.example.msauthentication.model.RegisterRequest;
 import com.example.msauthentication.repository.userRepository;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -42,7 +43,7 @@ public class AuthService {
                 .build();
     }
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) throws MessagingException {
         User user = User.builder()
             .username(request.getUsername())
             .password(passwordEncoder.encode(request.getPassword())) // Ensure to encode the password in a real application

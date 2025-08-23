@@ -4,6 +4,7 @@ import com.example.msauthentication.model.AuthResponse;
 import com.example.msauthentication.model.LoginRequest;
 import com.example.msauthentication.model.RegisterRequest;
 import com.example.msauthentication.service.AuthService;
+import jakarta.mail.MessagingException;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public  ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+    public  ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) throws MessagingException {
         return ResponseEntity.ok(authService.register(request));
     }
 
