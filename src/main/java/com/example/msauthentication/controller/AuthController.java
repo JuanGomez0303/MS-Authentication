@@ -7,10 +7,7 @@ import com.example.msauthentication.service.AuthService;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -27,6 +24,21 @@ public class AuthController {
     @PostMapping("/register")
     public  ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("/recover_password/{email}")
+    public ResponseEntity<AuthResponse> recovery(@PathVariable String email) {
+        return ResponseEntity.ok(authService.recovery(email));
+    }
+
+    @PostMapping("/reset_password/{otp}/{newPassword}")
+    public ResponseEntity<AuthResponse> resetPassword(@PathVariable String otp, @PathVariable String newPassword) {
+        return ResponseEntity.ok(authService.resetPassword(otp, newPassword));
+    }
+
+    @PostMapping("/validate_otp/{otp}")
+    public ResponseEntity<AuthResponse> validateOtp(@PathVariable String otp) {
+        return ResponseEntity.ok(authService.validateOtp(otp));
     }
 
 }

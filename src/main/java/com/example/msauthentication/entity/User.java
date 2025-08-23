@@ -41,4 +41,7 @@ public class User {
 
     @Column(nullable = false, name = "registration_time")
     private LocalDateTime registrationTime;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private ForgotPassword forgotPassword;
 }

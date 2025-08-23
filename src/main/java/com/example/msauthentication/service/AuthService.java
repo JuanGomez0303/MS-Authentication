@@ -1,40 +1,56 @@
 package com.example.msauthentication.service;
 
 
+import com.example.msauthentication.entity.ForgotPassword;
 import com.example.msauthentication.entity.User;
 import com.example.msauthentication.model.AuthResponse;
 import com.example.msauthentication.model.LoginRequest;
 import com.example.msauthentication.model.RegisterRequest;
-import com.example.msauthentication.repository.userRepository;
+import com.example.msauthentication.repository.ForgotPasswordRepository;
+import com.example.msauthentication.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final userRepository userRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ForgotPasswordRepository forgotPasswordRepository;
     private final JwtService jwtService;
+    private final EmailService emailService;
+
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final int TOKEN_LENGTH = 6;
+    private static final SecureRandom random = new SecureRandom();
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
+        if (userOptional.isEmpty()) {
+            return AuthResponse.builder()
+                    .message("Nombre de usuario no encnontrado")
+                    .build();
+        }
+
+        User user = userOptional.get();
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Contraseña incorrecta");
+            return AuthResponse.builder()
+                    .message("Contraseña incorrecta")
+                    .build();
         }
 
         String token = jwtService.getToken(user);
 
         return AuthResponse.builder()
                 .token(token)
+                .message("Login exitoso")
                 .build();
     }
 
@@ -55,6 +71,95 @@ public class AuthService {
 
         return AuthResponse.builder()
             .token(token)
+            .message("Usuario registrado exitosamente")
             .build();
+    }
+
+    public AuthResponse recovery(String email) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            return AuthResponse.builder()
+                    .message("Correo no registrado")
+                    .build();
+        }
+
+        User user = userOptional.get();
+
+        String otp = generateResetOTP();
+
+        emailService.sendPasswordResetEmail(user.getEmail(), otp);
+
+
+        ForgotPassword fp = ForgotPassword.builder()
+                .user(user)
+                .otp(otp)
+                .expiryDate(LocalDateTime.now().plusMinutes(15))
+                .build();
+
+        forgotPasswordRepository.save(fp);
+
+        return AuthResponse.builder().message("correo enviado").build();
+
+    }
+
+    public String generateResetOTP() {
+        StringBuilder token = new StringBuilder(TOKEN_LENGTH);
+        for (int i = 0; i < TOKEN_LENGTH; i++) {
+            int index = random.nextInt(CHARACTERS.length());
+            token.append(CHARACTERS.charAt(index));
+        }
+        return token.toString();
+    }
+
+
+
+    public AuthResponse resetPassword(String otp, String newPassword) {
+        ForgotPassword fp = forgotPasswordRepository.findByOtp(otp)
+                .orElse(null);
+
+        if (fp == null) {
+            return AuthResponse.builder()
+                    .message("OTP inválido")
+                    .build();
+        }
+
+        if (fp.getExpiryDate().isBefore(LocalDateTime.now())) {
+            forgotPasswordRepository.delete(fp);
+            return AuthResponse.builder()
+                    .message("OTP ha expirado")
+                    .build();
+        }
+
+        User user = fp.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        forgotPasswordRepository.delete(fp);
+
+        return AuthResponse.builder()
+                .message("Contraseña restablecida con éxito")
+                .build();
+    }
+
+    public AuthResponse validateOtp(String otp) {
+        ForgotPassword fp = forgotPasswordRepository.findByOtp(otp)
+                .orElse(null);
+
+        if (fp == null) {
+            return AuthResponse.builder()
+                    .message("Invalid OTP")
+                    .build();
+        }
+
+        if (fp.getExpiryDate().isBefore(LocalDateTime.now())) {
+            forgotPasswordRepository.delete(fp);
+            return AuthResponse.builder()
+                    .message("OTP has expired")
+                    .build();
+        }
+
+        return AuthResponse.builder()
+                .message("OTP Correcto")
+                .build();
     }
 }
