@@ -29,4 +29,9 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(request));
     }
 
+    @PostMapping("/validate_email/{email}")
+    public ResponseEntity<Boolean> validateEmail(@org.springframework.web.bind.annotation.PathVariable String email) {
+        return ResponseEntity.ok(authService.validateEmail(email));
+    }
+
 }

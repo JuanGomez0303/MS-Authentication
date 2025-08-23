@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +48,7 @@ public class AuthService {
             .name(request.getName())
             .phoneNumber(request.getPhoneNumber())
             .registrationTime(LocalDateTime.now())
+            .status("NOT_VALIDATED")
             .build();
 
         userRepository.save(user);
@@ -57,4 +59,22 @@ public class AuthService {
             .token(token)
             .build();
     }
+
+    public AuthResponse validateEmail(String email) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            return AuthResponse.builder()
+                    .message("Usuario con ese email no encontrado")
+                    .build();
+        }
+
+        User user = userOptional.get();
+        user.setStatus("VALIDATED");
+        userRepository.save(user);
+        
+        return AuthResponse.builder()
+                .message("Email validado correctamente")
+                .build();
+    }
+
 }
