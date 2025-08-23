@@ -35,7 +35,7 @@ public class EmailService {
 
 
         helper.setTo(to);
-        helper.setSubject("Email Verification");
+        helper.setSubject("Verificación de correo electrónico");
         helper.setText(htmlContent, true);
 
         mailSender.send(message);

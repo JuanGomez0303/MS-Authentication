@@ -5,15 +5,14 @@ import com.example.msauthentication.entity.User;
 import com.example.msauthentication.model.AuthResponse;
 import com.example.msauthentication.model.LoginRequest;
 import com.example.msauthentication.model.RegisterRequest;
-import com.example.msauthentication.repository.userRepository;
+import com.example.msauthentication.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -21,12 +20,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final userRepository userRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final EmailService emailService;
 
-    private final String validationURL = "URL_DE_VALIDACION_DEL_FRONTEND";
+    private final String AuthBaseURL = "http://localhost:8080/auth";
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
@@ -55,7 +54,12 @@ public class AuthService {
             .status("NOT_VALIDATED")
             .build();
 
-        emailService.sendValidationEmail(user.getEmail(),validationURL + "/" + user.getEmail());
+        String encodedEmail = URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8);
+        String validationLink = AuthBaseURL + "/validate_email/" + encodedEmail;
+        System.out.println(validationLink);
+        emailService.sendValidationEmail(
+                user.getEmail(), validationLink
+        );
 
         userRepository.save(user);
 

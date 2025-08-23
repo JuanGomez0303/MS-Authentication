@@ -8,10 +8,7 @@ import jakarta.mail.MessagingException;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -19,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+
+    private final String HomeBaseURL = "Frontend_URL";
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
@@ -30,9 +29,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(request));
     }
 
-    @PostMapping("/validate_email/{email}")
-    public ResponseEntity<AuthResponse> validateEmail(@org.springframework.web.bind.annotation.PathVariable String email) {
-        return ResponseEntity.ok(authService.validateEmail(email));
+    @GetMapping("/validate_email/{email}")
+    public ResponseEntity<Void> validateEmailAndRedirect(@PathVariable String email) {
+        authService.validateEmail(email);
+        return ResponseEntity.status(302).header(
+                "Location", HomeBaseURL + "/login").build();
     }
 
 }
