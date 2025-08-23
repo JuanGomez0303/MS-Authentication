@@ -23,6 +23,9 @@ public class AuthService {
     private final userRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final EmailService emailService;
+
+    private final String validationURL = "URL_DE_VALIDACION_DEL_FRONTEND";
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
@@ -50,6 +53,8 @@ public class AuthService {
             .registrationTime(LocalDateTime.now())
             .status("NOT_VALIDATED")
             .build();
+
+        emailService.sendValidationEmail(user.getEmail(),validationURL + "/" + user.getEmail());
 
         userRepository.save(user);
 
