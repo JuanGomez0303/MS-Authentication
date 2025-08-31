@@ -1,8 +1,10 @@
 package com.example.msauthentication.controller;
 
+import com.example.msauthentication.entity.User;
 import com.example.msauthentication.model.AuthResponse;
 import com.example.msauthentication.model.LoginRequest;
 import com.example.msauthentication.model.RegisterRequest;
+import com.example.msauthentication.model.UserDTO;
 import com.example.msauthentication.service.AuthService;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,18 @@ public class AuthController {
     @PostMapping("/validate_otp/{otp}")
     public ResponseEntity<AuthResponse> validateOtp(@PathVariable String otp) {
         return ResponseEntity.ok(authService.validateOtp(otp));
+    }
+
+    @PostMapping("/token/getUser")
+    public ResponseEntity<UserDTO> getUserFromToken(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        return ResponseEntity.ok(authService.getUserFromToken(token));
+    }
+
+    @PostMapping("/token/validate")
+    public ResponseEntity<String> validateToken(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        return ResponseEntity.ok(authService.validateToken(token));
     }
 
 }

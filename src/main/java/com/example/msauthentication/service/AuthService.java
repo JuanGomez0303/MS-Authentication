@@ -6,6 +6,7 @@ import com.example.msauthentication.entity.User;
 import com.example.msauthentication.model.AuthResponse;
 import com.example.msauthentication.model.LoginRequest;
 import com.example.msauthentication.model.RegisterRequest;
+import com.example.msauthentication.model.UserDTO;
 import com.example.msauthentication.repository.ForgotPasswordRepository;
 import com.example.msauthentication.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -161,5 +162,18 @@ public class AuthService {
         return AuthResponse.builder()
                 .message("OTP Correcto")
                 .build();
+    }
+
+    public UserDTO getUserFromToken(String token) {
+        String username = jwtService.validateToken(token);
+        User user = userRepository.findByUsername(username).orElse(null);
+        UserDTO userDTO = UserDTO.fromEntity(user);
+        return userDTO;
+
+    }
+
+    public String validateToken(String token) {
+        String username = jwtService.validateToken(token);
+        return username;
     }
 }
