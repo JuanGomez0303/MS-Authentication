@@ -11,7 +11,7 @@
     <groupId>com.example</groupId>
     <artifactId>MS-Authentication</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>MS-Authentication</name>
     <description>MS-Authentication</description>
     <url/>
