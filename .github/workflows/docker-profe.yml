@@ -42,3 +42,18 @@ jobs:
     - name: Print pushed image URL
       run: echo "Imagen publicada:ghcr.io/${{ env.OWNER_LC }}/ms-authentication:latest"
 
+  deploy-onpremise:
+    name: Deploy on MicroK8s On-Premise
+    runs-on: produccion
+    needs: build-and-publish
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Apply Kubernetes deployment
+        run: sudo microk8s kubectl apply -f k8s/dev/deploymentservice.yaml
+      - name: Apply Kubernetes ingress
+        run: sudo microk8s kubectl apply -f k8s/dev/ingress.yaml
+      - name: Restart Kubernetes deployment
+        run: sudo microk8s kubectl rollout restart deployment/ms-auth -n firsteps-dev
+
