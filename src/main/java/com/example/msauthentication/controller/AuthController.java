@@ -46,13 +46,20 @@ public class AuthController {
     @PostMapping("/token/getUser")
     public ResponseEntity<UserDTO> getUserFromToken(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
-        return ResponseEntity.ok(authService.getUserFromToken(token));
+        UserDTO userDTO = authService.getUserFromToken(token);
+        if (userDTO == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(userDTO);
     }
 
     @PostMapping("/token/validate")
     public ResponseEntity<String> validateToken(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
-        return ResponseEntity.ok(authService.validateToken(token));
+        String userId = authService.validateToken(token);
+        if (userId == null) {
+            return ResponseEntity.status(401).body("Invalid or expired token");
+        }
+        return ResponseEntity.ok(userId);
     }
-
 }

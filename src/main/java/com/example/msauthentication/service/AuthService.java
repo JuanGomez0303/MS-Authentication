@@ -165,15 +165,30 @@ public class AuthService {
     }
 
     public UserDTO getUserFromToken(String token) {
-        String username = jwtService.validateToken(token);
-        User user = userRepository.findByUsername(username).orElse(null);
-        UserDTO userDTO = UserDTO.fromEntity(user);
-        return userDTO;
-
+        String userId = jwtService.validateToken(token);
+        User user = null;
+        try {
+            user = userRepository.findById(userId).orElse(null);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        if (user == null) {
+            return null;
+        }
+        return UserDTO.fromEntity(user);
     }
 
     public String validateToken(String token) {
-        String username = jwtService.validateToken(token);
-        return username;
+        String userId = jwtService.validateToken(token);
+        User user = null;
+        try {
+            user = userRepository.findById(userId).orElse(null);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        if (user == null) {
+            return null;
+        }
+        return userId;
     }
 }
