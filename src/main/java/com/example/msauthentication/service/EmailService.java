@@ -47,8 +47,6 @@ public class EmailService {
         mailSender.send(message);
     }
 
-}
-
     public void sendPasswordResetEmail(String to, String otp) {
 
         MimeMessage message = mailSender.createMimeMessage();
@@ -68,3 +66,4 @@ public class EmailService {
     }
 }
 }
+
