@@ -6,6 +6,7 @@ import com.example.msauthentication.entity.User;
 import com.example.msauthentication.model.AuthResponse;
 import com.example.msauthentication.model.LoginRequest;
 import com.example.msauthentication.model.RegisterRequest;
+import jakarta.mail.MessagingException;
 import com.example.msauthentication.model.UserDTO;
 import com.example.msauthentication.repository.ForgotPasswordRepository;
 import com.example.msauthentication.repository.UserRepository;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -27,6 +30,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailService emailService;
 
+    private final String AuthBaseURL = "http://localhost:8080/auth";
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int TOKEN_LENGTH = 6;
     private static final SecureRandom random = new SecureRandom();
@@ -55,7 +59,7 @@ public class AuthService {
                 .build();
     }
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) throws MessagingException {
         User user = User.builder()
             .username(request.getUsername())
             .password(passwordEncoder.encode(request.getPassword())) // Ensure to encode the password in a real application
@@ -64,7 +68,15 @@ public class AuthService {
             .name(request.getName())
             .phoneNumber(request.getPhoneNumber())
             .registrationTime(LocalDateTime.now())
+            .status("NOT_VALIDATED")
             .build();
+
+        String encodedEmail = URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8);
+        String validationLink = AuthBaseURL + "/validate_email/" + encodedEmail;
+        System.out.println(validationLink);
+        emailService.sendValidationEmail(
+                user.getEmail(), validationLink
+        );
 
         userRepository.save(user);
 
@@ -76,6 +88,23 @@ public class AuthService {
             .build();
     }
 
+    public AuthResponse validateEmail(String email) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            return AuthResponse.builder()
+                    .message("Usuario con ese email no encontrado")
+                    .build();
+        }
+
+        User user = userOptional.get();
+        user.setStatus("VALIDATED");
+        userRepository.save(user);
+        
+        return AuthResponse.builder()
+                .message("Email validado correctamente")
+                .build();
+    }
+
     public AuthResponse recovery(String email) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (userOptional.isEmpty()) {
@@ -85,7 +114,6 @@ public class AuthService {
         }
 
         User user = userOptional.get();
-
         String otp = generateResetOTP();
 
         emailService.sendPasswordResetEmail(user.getEmail(), otp);
