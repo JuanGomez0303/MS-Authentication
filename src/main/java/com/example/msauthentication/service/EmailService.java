@@ -14,6 +14,12 @@ import org.thymeleaf.context.Context;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import org.springframework.stereotype.Service;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+
 
 @Service
 public class EmailService {
@@ -41,4 +47,24 @@ public class EmailService {
         mailSender.send(message);
     }
 
+}
+
+    public void sendPasswordResetEmail(String to, String otp) {
+
+        MimeMessage message = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject("Solicitud de restablecimiento de contraseña");
+
+            Context context = new Context();
+            context.setVariable("otp", otp);
+            String htmlContent = templateEngine.process("PasswordReset", context);
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+    }
+}
 }

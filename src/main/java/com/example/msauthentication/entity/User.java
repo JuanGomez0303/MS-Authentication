@@ -44,4 +44,6 @@ public class User {
 
     @Column(nullable = false)
     private String status;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private ForgotPassword forgotPassword;
 }
