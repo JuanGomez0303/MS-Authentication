@@ -1,6 +1,5 @@
 package com.example.msauthentication.service;
 
-
 import com.example.msauthentication.entity.ForgotPassword;
 import com.example.msauthentication.entity.User;
 import com.example.msauthentication.model.AuthResponse;
@@ -30,7 +29,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailService emailService;
 
-    private final String AuthBaseURL = "http://localhost:8080/auth";
+    private final String AuthBaseURL = "http://192.168.0.135/auth";
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int TOKEN_LENGTH = 6;
     private static final SecureRandom random = new SecureRandom();
@@ -61,31 +60,31 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) throws MessagingException {
         User user = User.builder()
-            .username(request.getUsername())
-            .password(passwordEncoder.encode(request.getPassword())) // Ensure to encode the password in a real application
-            .email(request.getEmail())
-            .role(request.getRole())
-            .name(request.getName())
-            .phoneNumber(request.getPhoneNumber())
-            .registrationTime(LocalDateTime.now())
-            .status("NOT_VALIDATED")
-            .build();
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword())) // Ensure to encode the password in a real
+                                                                         // application
+                .email(request.getEmail())
+                .role(request.getRole())
+                .name(request.getName())
+                .phoneNumber(request.getPhoneNumber())
+                .registrationTime(LocalDateTime.now())
+                .status("NOT_VALIDATED")
+                .build();
 
         String encodedEmail = URLEncoder.encode(user.getEmail(), StandardCharsets.UTF_8);
         String validationLink = AuthBaseURL + "/validate_email/" + encodedEmail;
         System.out.println(validationLink);
         emailService.sendValidationEmail(
-                user.getEmail(), validationLink
-        );
+                user.getEmail(), validationLink);
 
         userRepository.save(user);
 
         String token = jwtService.getToken(user);
 
         return AuthResponse.builder()
-            .token(token)
-            .message("Usuario registrado exitosamente")
-            .build();
+                .token(token)
+                .message("Usuario registrado exitosamente")
+                .build();
     }
 
     public AuthResponse validateEmail(String email) {
@@ -99,7 +98,7 @@ public class AuthService {
         User user = userOptional.get();
         user.setStatus("VALIDATED");
         userRepository.save(user);
-        
+
         return AuthResponse.builder()
                 .message("Email validado correctamente")
                 .build();
@@ -117,7 +116,6 @@ public class AuthService {
         String otp = generateResetOTP();
 
         emailService.sendPasswordResetEmail(user.getEmail(), otp);
-
 
         ForgotPassword fp = ForgotPassword.builder()
                 .user(user)
@@ -139,8 +137,6 @@ public class AuthService {
         }
         return token.toString();
     }
-
-
 
     public AuthResponse resetPassword(String otp, String newPassword) {
         ForgotPassword fp = forgotPasswordRepository.findByOtp(otp)
@@ -204,6 +200,20 @@ public class AuthService {
             return null;
         }
         return UserDTO.fromEntity(user);
+    }
+
+    public UserDTO getUserFromId(String id) {
+        User user = null;
+        try {
+            user = userRepository.findById(id).orElse(null);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        if (user == null) {
+            return null;
+        }
+        return UserDTO.fromEntity(user);
+
     }
 
     public String validateToken(String token) {

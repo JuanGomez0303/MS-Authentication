@@ -27,7 +27,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public  ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) throws MessagingException {
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) throws MessagingException {
         return ResponseEntity.ok(authService.register(request));
     }
 
@@ -36,6 +36,12 @@ public class AuthController {
         authService.validateEmail(email);
         return ResponseEntity.status(302).header(
                 "Location", HomeBaseURL + "/login").build();
+    }
+
+    @GetMapping("/profile/{id}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
+        return ResponseEntity.ok(authService.getUserFromId(id));
+
     }
 
     @PostMapping("/recover_password/{email}")
