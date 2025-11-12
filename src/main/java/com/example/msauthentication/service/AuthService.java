@@ -29,7 +29,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final EmailService emailService;
 
-    private final String AuthBaseURL = "http://192.168.0.135/auth";
+    private final String AuthBaseURL = "http://localhost:4200/auth";
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final int TOKEN_LENGTH = 6;
     private static final SecureRandom random = new SecureRandom();

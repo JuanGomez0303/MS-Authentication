@@ -40,7 +40,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:4201", "http://localhost:4200", "http://192.168.0.135")); // tu frontend
+        configuration.setAllowedOrigins(List.of("http://localhost:4201", "http://localhost:4200", "http://192.168.0.135", "https://firstepscol.com")); // tu frontend
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true); // si usas cookies o tokens en el frontend
