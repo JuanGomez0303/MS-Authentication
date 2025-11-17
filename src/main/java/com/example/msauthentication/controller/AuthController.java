@@ -34,8 +34,7 @@ public class AuthController {
     @GetMapping("/validate_email/{email}")
     public ResponseEntity<Void> validateEmailAndRedirect(@PathVariable String email) {
         authService.validateEmail(email);
-        return ResponseEntity.status(302).header(
-                "Location", HomeBaseURL + "/login").build();
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/profile/{id}")
